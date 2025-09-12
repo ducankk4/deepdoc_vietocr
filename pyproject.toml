@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deepdoc-vietocr"
+version = "0.1.0"
+description = "DeepDoc VietOCR Pipeline packaged as a library"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "numpy",
+    "opencv-python",
+    "onnxruntime",
+    "torch",
+    "matplotlib",
+    "Pillow",
+    "pdfplumber",
+    "huggingface_hub",
+    "shapely",
+    "pyclipper",
+    "ruamel.yaml",
+    "cachetools",
+    "six",
+    "pypdfium2"
+]
+
+[tool.setuptools]
+packages = ["module", "vietocr", "utils"]
+py-modules = ["full_pipeline"]
+
+[tool.setuptools.package-data]
+"*" = ["*.json", "*.yaml", "*.pem", "*.pth", "*.txt"]
