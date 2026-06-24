@@ -19,22 +19,22 @@ from module import LayoutRecognizer, TableStructureRecognizer, init_in_out
 
 from datetime import datetime
 
-log_dir = "log"
-os.makedirs(log_dir, exist_ok=True)
-log_file = os.path.join(log_dir, "full_pipeline.log")
+def setup_logging(log_dir="log"):
+    os.makedirs(log_dir, exist_ok=True)
+    log_file = os.path.join(log_dir, "full_pipeline.log")
 
-# Count previous runs by counting lines that start with "=== Run"
-run_count = 1
-if os.path.exists(log_file):    
-    with open(log_file, "r", encoding="utf-8") as f:
-        run_count += sum(1 for line in f if line.startswith("=== Run"))
+    # Count previous runs by counting lines that start with "=== Run"
+    run_count = 1
+    if os.path.exists(log_file):    
+        with open(log_file, "r", encoding="utf-8") as f:
+            run_count += sum(1 for line in f if line.startswith("=== Run"))
 
-# Write run header with count and date
-with open(log_file, "a", encoding="utf-8") as f:
-    f.write(f"\n=== Run {run_count} | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ===\n")
+    # Write run header with count and date
+    with open(log_file, "a", encoding="utf-8") as f:
+        f.write(f"\n=== Run {run_count} | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ===\n")
 
-sys.stdout = open(log_file, "a", encoding="utf-8")
-sys.stderr = sys.stdout
+    sys.stdout = open(log_file, "a", encoding="utf-8")
+    sys.stderr = sys.stdout
 
 def extract_table_markdown(img, table_region, ocr):
     # Use bbox if present
