@@ -114,40 +114,92 @@ def main(args):
         print(f"Detected {len(layouts)} layout regions")
         region_and_pos = []
 
-        from PIL import Image, ImageDraw
-
-        # Create a mask for detected regions
-        mask = Image.new("1", img.size, 0)
-        draw = ImageDraw.Draw(mask)
-        for region in layouts:
-            if "bbox" in region:
-                x0, y0, x1, y1 = map(int, region["bbox"])
-            else:
-                x0, y0, x1, y1 = map(int, [region.get("x0", 0), region.get("top", 0), region.get("x1", 0), region.get("bottom", 0)])
-            draw.rectangle([x0, y0, x1, y1], fill=1)
-
+        # Process and extract table regions, and collect bounding boxes to exclude from general OCR
+        detected_layouts = []
+        exclude_bboxes = []
         for region in layouts:
             label = region.get("type", "").lower()
             score = region.get("score", 1.0)
-            bbox = region.get("bbox", [region.get("x0", 0), region.get("top", 0), region.get("x1", 0), region.get("bottom", 0)])
-            y_pos = bbox[1]  # Use top y as position for ordering
             if label in ["table"] and score >= float(args.threshold):
+                if "bbox" in region:
+                    x0, y0, x1, y1 = map(int, region["bbox"])
+                else:
+                    x0, y0, x1, y1 = map(int, [region.get("x0", 0), region.get("top", 0), region.get("x1", 0), region.get("bottom", 0)])
+                exclude_bboxes.append((x0, y0, x1, y1))
+
                 print(f"Extracting table markdown for region: {region}")
                 markdown = extract_table_markdown(img, region, ocr)
-                region_and_pos.append((y_pos, markdown))
+                detected_layouts.append((y0, markdown))
 
-        # Now OCR any remaining undetected area (including non-table/figure)
-        inv_mask = mask.point(lambda p: 1 - p)
-        if inv_mask.getbbox():
-            x0, y0, x1, y1 = inv_mask.getbbox()
-            region_img = img.crop((x0, y0, x1, y1))
-            ocr_results = ocr(np.array(region_img))
-            text = "\n".join([t[0] for _, t in ocr_results if t and t[0]])
-            region_and_pos.append((y0, text))
+        # Sort tables by their y position
+        detected_layouts.sort(key=lambda x: x[0])
 
-        # Sort by y position to preserve original order
-        region_and_pos.sort(key=lambda x: x[0])
-        markdown_concat = "\n\n".join([item[1] for item in region_and_pos])
+        # Run OCR on the whole image
+        ocr_results = ocr(np.array(img))
+
+        # Filter OCR boxes that overlap with the excluded table regions
+        kept_ocr_lines = []
+        for b, t in ocr_results:
+            if not t or not t[0]:
+                continue
+            bx0 = min(p[0] for p in b)
+            by0 = min(p[1] for p in b)
+            bx1 = max(p[0] for p in b)
+            by1 = max(p[1] for p in b)
+
+            # Check overlap with table regions
+            overlap = False
+            for lx0, ly0, lx1, ly1 in exclude_bboxes:
+                ix0 = max(bx0, lx0)
+                iy0 = max(by0, ly0)
+                ix1 = min(bx1, lx1)
+                iy1 = min(by1, ly1)
+
+                if ix0 < ix1 and iy0 < iy1:
+                    inter_area = (ix1 - ix0) * (iy1 - iy0)
+                    box_area = (bx1 - bx0) * (by1 - by0)
+                    if box_area > 0 and (inter_area / box_area) > 0.3:
+                        overlap = True
+                        break
+
+            if not overlap:
+                y_center = (by0 + by1) / 2
+                kept_ocr_lines.append((y_center, t[0]))
+
+        # Merge layouts and kept OCR lines, preserving original OCR reading order
+        merged_items = []
+        layout_idx = 0
+        num_layouts = len(detected_layouts)
+
+        for y_center, text in kept_ocr_lines:
+            # Insert any layouts that are positioned above the current OCR line
+            while layout_idx < num_layouts and detected_layouts[layout_idx][0] <= y_center:
+                merged_items.append(("layout", detected_layouts[layout_idx][1]))
+                layout_idx += 1
+            merged_items.append(("text", text))
+
+        # Append any remaining layouts
+        while layout_idx < num_layouts:
+            merged_items.append(("layout", detected_layouts[layout_idx][1]))
+            layout_idx += 1
+
+        # Group consecutive text lines with single \n, separate from layouts with \n\n
+        document_parts = []
+        current_text_block = []
+
+        for item_type, content in merged_items:
+            if item_type == "text":
+                current_text_block.append(content)
+            else:  # "layout"
+                if current_text_block:
+                    document_parts.append("\n".join(current_text_block))
+                    current_text_block = []
+                document_parts.append(content)
+
+        if current_text_block:
+            document_parts.append("\n".join(current_text_block))
+
+        markdown_concat = "\n\n".join(document_parts)
         out_path = outputs[idx] + "_full.md"
         print(f"Writing concatenated markdown to: {out_path}")
         with open(out_path, "w+", encoding='utf-8') as f:
@@ -158,10 +210,13 @@ def main(args):
         print(f"Processing image {idx} done in {elapsed:.2f} seconds")  # <-- Print elapsed time
 
 if __name__ == "__main__":
+    setup_logging()
     parser = argparse.ArgumentParser()
+    DEFAULT_INPUT = r"E:\download\kms difficult file\130628 254 CBDK cu nhan su du tuyen vao cac vi tri chu chottrong NSRP giai doan II.pdf"  # Path to your scanned PDF file or image directory
+
     parser.add_argument('--inputs',
                         help="Directory or file path for images or PDFs",
-                        required=True)
+                        default=DEFAULT_INPUT)
     parser.add_argument('--output_dir', help="Directory for output markdown files. Default: './table_markdown_outputs'",
                         default="./table_markdown_outputs")
     parser.add_argument('--threshold',
