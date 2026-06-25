@@ -22,12 +22,13 @@ dependencies = [
     "ruamel.yaml",
     "cachetools",
     "six",
-    "pypdfium2"
+    "pypdfium2",
+    "loguru"
 ]
 
 [tool.setuptools]
 packages = ["module", "vietocr", "utils"]
-py-modules = ["full_pipeline"]
+py-modules = ["full_pipeline", "full_pipeline_v2"]
 
 [tool.setuptools.package-data]
 "*" = ["*.json", "*.yaml", "*.pem", "*.pth", "*.txt"]
