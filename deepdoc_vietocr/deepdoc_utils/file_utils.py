@@ -26,8 +26,8 @@ from PIL import Image
 from cachetools import LRUCache, cached
 from ruamel.yaml import YAML
 
-from deepdoc_utils.db import FileType
-from deepdoc_utils.constants import IMG_BASE64_PREFIX
+from deepdoc_vietocr.deepdoc_utils.db import FileType
+from deepdoc_vietocr.deepdoc_utils.constants import IMG_BASE64_PREFIX
 
 PROJECT_BASE = os.getenv("RAG_PROJECT_BASE") or os.getenv("RAG_DEPLOY_BASE")
 RAG_BASE = os.getenv("RAG_BASE")

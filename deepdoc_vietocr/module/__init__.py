@@ -33,7 +33,7 @@ def init_in_out(args):
     from PIL import Image
     import os
     import traceback
-    from deepdoc_utils.file_utils import traversal_files
+    from deepdoc_vietocr.deepdoc_utils.file_utils import traversal_files
     images = []
     outputs = []
 

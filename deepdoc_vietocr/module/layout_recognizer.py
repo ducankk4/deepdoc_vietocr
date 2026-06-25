@@ -23,9 +23,9 @@ import cv2
 import numpy as np
 from huggingface_hub import snapshot_download
 
-from deepdoc_utils.file_utils import get_project_base_directory
-from module import Recognizer
-from .operators import nms
+from deepdoc_vietocr.deepdoc_utils.file_utils import get_project_base_directory
+from deepdoc_vietocr.module.recognizer import Recognizer
+from deepdoc_vietocr.module.operators import nms
 
 
 class LayoutRecognizer(Recognizer):

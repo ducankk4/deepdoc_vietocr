@@ -9,8 +9,8 @@ from loguru import logger
 import numpy as np
 from PIL import Image
 
-from module import LayoutRecognizer, TableStructureRecognizer, init_in_out
-from module.ocr import OCR
+from deepdoc_vietocr.module import LayoutRecognizer, TableStructureRecognizer, init_in_out
+from deepdoc_vietocr.module.ocr import OCR
 
 
 def configure_logging(log_dir: str = "log") -> None:

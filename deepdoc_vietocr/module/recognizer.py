@@ -22,11 +22,11 @@ import cv2
 from functools import cmp_to_key
 
 
-from deepdoc_utils.file_utils import get_project_base_directory
-from .operators import *  # noqa: F403
-from .operators import preprocess
-from . import operators
-from .ocr import load_model
+from deepdoc_vietocr.deepdoc_utils.file_utils import get_project_base_directory
+from deepdoc_vietocr.module.operators import *  # noqa: F403
+from deepdoc_vietocr.module.operators import preprocess
+from deepdoc_vietocr.module import operators
+from deepdoc_vietocr.module.ocr import load_model
 # ONNX
 # from from module.ocr_onnx import OCR
 
