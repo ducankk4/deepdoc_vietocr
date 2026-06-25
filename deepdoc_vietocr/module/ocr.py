@@ -139,10 +139,15 @@ class TextRecognizer:
         
         # Try to resolve to package's absolute weight path first, otherwise fallback to URL auto-download
         import deepdoc_vietocr.vietocr as vietocr
-        pkg_dir = os.path.dirname(vietocr.__file__)
-        pkg_weight = os.path.join(pkg_dir, 'weight', 'vgg_seq2seq.pth')
+        pkg_dir = None
+        if hasattr(vietocr, '__path__') and vietocr.__path__:
+            pkg_dir = list(vietocr.__path__)[0]
+        elif hasattr(vietocr, '__file__') and vietocr.__file__:
+            pkg_dir = os.path.dirname(vietocr.__file__)
+
+        pkg_weight = os.path.join(pkg_dir, 'weight', 'vgg_seq2seq.pth') if pkg_dir else None
         
-        if os.path.exists(pkg_weight):
+        if pkg_weight and os.path.exists(pkg_weight):
             config['weights'] = pkg_weight
         elif os.path.exists(r"vietocr\weight\vgg_seq2seq.pth"):
             config['weights'] = r"vietocr\weight\vgg_seq2seq.pth"
