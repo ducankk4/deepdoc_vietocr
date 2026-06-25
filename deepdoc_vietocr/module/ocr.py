@@ -22,7 +22,7 @@ import os
 from huggingface_hub import snapshot_download
 
 from deepdoc_vietocr.deepdoc_utils.file_utils import get_project_base_directory
-from deepdoc_vietocrdeepdoc_utils.settings import PARALLEL_DEVICES
+from deepdoc_vietocr.deepdoc_utils.settings import PARALLEL_DEVICES
 from .operators import *  # noqa: F403
 from . import operators
 import math
@@ -136,15 +136,29 @@ class TextRecognizer:
         
         #seq2seq
         config = Cfg.load_config_from_name('vgg_seq2seq')
-        config['weights'] = r"vietocr\weight\vgg_seq2seq.pth" 
+        
+        # Try to resolve to package's absolute weight path first, otherwise fallback to URL auto-download
+        import deepdoc_vietocr.vietocr as vietocr
+        pkg_dir = os.path.dirname(vietocr.__file__)
+        pkg_weight = os.path.join(pkg_dir, 'weight', 'vgg_seq2seq.pth')
+        
+        if os.path.exists(pkg_weight):
+            config['weights'] = pkg_weight
+        elif os.path.exists(r"vietocr\weight\vgg_seq2seq.pth"):
+            config['weights'] = r"vietocr\weight\vgg_seq2seq.pth"
 
         #transformer
         #config = Cfg.load_config_from_name('vgg_transformer')
-        #config['weights'] = r"vietocr\weight\vgg_transformer.pth" 
+        #pkg_trans_weight = os.path.join(pkg_dir, 'weight', 'vgg_transformer.pth')
+        #if os.path.exists(pkg_trans_weight):
+        #    config['weights'] = pkg_trans_weight
+        #elif os.path.exists(r"vietocr\weight\vgg_transformer.pth"):
+        #    config['weights'] = r"vietocr\weight\vgg_transformer.pth"
 
         config['cnn']['pretrained'] = True
         config['device'] = 'cpu'
         self.detector = Predictor(config)
+
 
     def __call__(self, img_list):
         results = []
