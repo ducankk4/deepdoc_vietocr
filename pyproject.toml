@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["module", "vietocr", "utils"]
+packages = ["module", "vietocr", "deepdoc_utils"]
 py-modules = ["full_pipeline", "full_pipeline_v2"]
 
 [tool.setuptools.package-data]
