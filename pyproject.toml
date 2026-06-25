@@ -27,7 +27,15 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["module", "vietocr", "deepdoc_utils", "deepdoc_utils.db"]
+packages = [
+    "deepdoc_vietocr",
+    "deepdoc_vietocr.module",
+    "deepdoc_vietocr.deepdoc_utils",
+    "deepdoc_vietocr.deepdoc_utils.db",
+    "deepdoc_vietocr.vietocr",
+    "deepdoc_vietocr.vietocr.tool",
+    "deepdoc_vietocr.vietocr.model"
+]
 py-modules = ["full_pipeline", "full_pipeline_v2"]
 
 

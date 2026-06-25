@@ -101,5 +101,6 @@ class FileSource(StrEnum):
 class CanvasType(StrEnum):
     ChatBot = "chatbot"
     DocBot = "docbot"
+    
 
 KNOWLEDGEBASE_FOLDER_NAME=".knowledgebase"
